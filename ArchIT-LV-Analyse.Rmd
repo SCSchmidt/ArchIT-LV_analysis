@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Analyse der Lehrveranstaltungen bei IANUS
 
-- Unterscheidung: Studierende haben Chance drauf (alle Angebote) und wird am Institut angeboten
+- Hier nur enige Kommentare zur Datenbereinigung und Auffälligkeiten. Eigentliche Interpretation dann im Artikel
 
 ## Daten einladen
 ```{r}
@@ -474,12 +474,11 @@ LV_n |>
 ggsave("./figures/Inhalte_all_Stadt.png", dpi = 300, width = 25, height = 15, units = "cm")        
 
 
-
-# TODO: Farben nach Themen zuordnen (so dass genaue Unterscheidung möglich, wenn gewünscht, aber ansonsten auch einfach ein Eindruck möglich wird)
 ```
 
 
 ```{r stadt_inhalt_all_heatmap}
+
 library(forcats)
 
 LV_inh_st <- as.data.frame(table(LV_n$inhalt_neu2, LV_n$Stadt) )
@@ -493,37 +492,14 @@ LV_inh_st_sum_i <- LV_inh_st |>
   group_by(Inhalt) |> 
   summarize(sum_inhalt = sum(n))
 
-### TODO : doch lieber richtige heatmap?
-#LV_inh_st |>
-#  ggplot(aes(x = fct_rev(fct_infreq(Stadt) )) )+
-#  geom_bar(aes(y = n,
-#               fill = Inhalt ),
-#           position = "fill",
-#           stat = "identity" ) +
-#  labs(title = "Schlagworte zur Beschreibung der Kursinhalte nach Stadt",
-#       y = "Prozent der Schlagworte auf Stadt",
-#       x = "",
-#       fill = "")+
- #geom_text(aes(y = 1,
-#                label = sum(n) ) ) +
-#  scale_fill_manual(breaks = c("3D", "3D Scan", "Laserscanning" , "3D-Modellierung",  "CAD" ,"Photogrammetrie", "Digitale Vermessung", "Geophysik"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistik", "Digitale Datenauswertung" ,  "EDV" , "Datenpräsentation", "R", "Auszeichnungssprachen"  ,  "Programmierung"  ,   "Software und Tools", "Dig. Methoden & Theorien", "Datenmanagement","Datenbanken","Datenkuratierung",  "Metadaten", "Archivierung"  ,  "Digital Humanities"   ,    "Textanalyse"  , "Dig. Editieren"  ,   "Ausgrabungsdokumentation", "Digitalisierung"   , "Digitale Dokumentation",     "Visualisierung"  ,  "Zeichnen","Bildbearbeitung"  , "Fotografie" , "Audio und Video", "Digitale Ressourcen", "Webtechnologien",  "Internet", "Web-Kartierung" , "Online-Ressourcen" ) ,
- #                   values = c("firebrick", "red4", "red3", "red2", "red1", "firebrick3", "orangered", "darkorange3", "darkorange2", "darkorange1", "goldenrod4", "goldenrod3", "goldenrod2", "goldenrod1",  "gold1", "yellow", "yellow3" ,"yellow4"  , "yellowgreen" ,"chartreuse2"   ,"chartreuse4" , "aquamarine4" , "aquamarine2" , "aquamarine" , "cyan" , "cyan4", "darkblue"   ,    "blue"  ,   "slateblue4"  ,   "mediumpurple",  "mediumpurple1"  ,  "mediumpurple4",   "plum4"  ,  "plum3" ,  "plum2"  ,  "plum1" ,  "navajowhite"                               ,  "navajowhite2" ,   "navajowhite3",  "navajowhite4", "tan2" , "snow3") )+
-#    theme_bw() +
-#    geom_text(label = paste0("n Kurse = ", zahl),
- #          x = 2,
- #          y = 370,
-  #         size = 3) +
-  #  coord_flip()+
-  #  theme(legend.position = "bottom",
-  #        legend.key.width = unit(0.3, "cm"),
-  #        legend.key.height = unit(0.3, "cm"),
-  #        legend.text = element_text(size = 8))
 
 LV_inh_st <- left_join(LV_inh_st, LV_inh_st_sum, by = "Stadt")
 LV_inh_st <- left_join(LV_inh_st, LV_inh_st_sum_i, by = "Inhalt")
 
 
 LV_inh_st$Inhalt <- factor(LV_inh_st$Inhalt, ordered = TRUE ,levels = c("3D", "3D Scan", "Laserscanning" , "3D-Modellierung",  "CAD" ,"Photogrammetrie", "Digitale Vermessung", "Geophysik"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistik", "Digitale Datenauswertung" ,  "EDV" , "Datenpräsentation", "R", "Auszeichnungssprachen"  ,  "Programmierung"  ,   "Software und Tools", "Dig. Methoden & Theorien", "Datenmanagement","Datenbanken","Datenkuratierung",  "Metadaten", "Archivierung"  ,  "Digital Humanities"   ,    "Textanalyse"  , "Dig. Editieren"  ,   "Ausgrabungsdokumentation", "Digitalisierung"   , "Digitale Dokumentation",     "Visualisierung"  ,  "Zeichnen","Bildbearbeitung"  , "Fotografie" , "Audio und Video", "Digitale Ressourcen", "Webtechnologien",  "Internet", "Web-Kartierung" , "Online-Ressourcen" ) )
+
+# verschiedenen Visualisierungen ausbprobiert
 
 LV_inh_st |>
   ggplot(aes(x = Inhalt,
@@ -558,6 +534,7 @@ LV_inh_st |>
 ggsave("./figures/Inhalte_all_Stadt_heatmap_nach_Stadt.png", dpi = 300, width = 25, height = 15, units = "cm")        
 
 
+# version für Publikation:
 LV_inh_st |>
   ggplot(aes(x = Inhalt,
              y = Stadt) )+
@@ -627,7 +604,7 @@ ggsave("./figures/Sem_Inhalte_Heatmap.png", dpi = 300)
 
 
 ### Gruppieren der themen
-
+- nur als Code stehen gelassen, diesen Ansatz nicht im Artikel
 ```{r}
 LV_n <- LV_n |>
   mutate(inhalt_gr = case_when(
