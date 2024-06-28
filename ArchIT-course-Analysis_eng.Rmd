@@ -1,0 +1,373 @@
+---
+title: "LV Archäoinformatik"
+author: "Sophie C. Schmidt"
+date: "2024-01-12"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Analysis of courses in IANUS
+
+## load data
+```{r}
+library(readODS)
+
+LV <- read_ods("IANUS-LV_alle.ods")
+
+LV$Semester <- factor(LV$Semester, levels = c("WiSe 2014/15","SoSe 2015", "WiSe 2015/16", "SoSe 2016", "WiSe 2016/17", "SoSe 2017", "WiSe 2017/18", "SoSe 2018","WiSe 2018/19", "SoSe 2019", "WiSe 2019/20", "SoSe 2020", "WiSe 2020/21", "SoSe 2021", "WiSe 2021/22", "SoSe 2022", "WiSe 2022/23", "SoSe 2023"), ordered = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(stringr)
+```
+
+## data cleaning
+
+There is a number of courses in the collection, which had no tags on the topic of the course, their titles did not show any mention of an ArchIT topic and they did not have similar entries at the university, which showed tags that referred to ArchIT.
+
+These courses will be removed due to these criteria:
+
+- courses in Regensburg in Winter 2017/18 (classical archaeology), 
+
+- courses in Freiburgerg in Winter 2017/18 (near eastern archaeology)
+
+- seminar "Einführung in die Papyrologie" in Leipzig in WiSe 2015/16
+
+- courses in Marburger im WieSE 2020/21
+
+- courses in Mainz 2020/21 at the Latinistik institute
+
+```{r}
+
+# filtern nach den genannten Kursen:
+LV_r <- LV |>
+  filter(Stadt == "Regensburg" & Semester == "WiSe 2017/18") # 10 Kurse
+
+LV_fr <- LV |>
+  filter(Stadt == "Freiburg" & Semester == "WiSe 2017/18" & str_detect(Institut, "Vorderasiat")) # 6 Kurse
+
+LV_m <- LV |>
+  filter(Stadt == "Marburg" & Semester == "WiSe 2020/21") # 9 Kurse
+
+# neuen Datensatz erstellen mit gefilterten Kursen
+LV_neu <- LV |>
+  filter(!(Veranstaltungstitel %in% LV_r$Veranstaltungstitel))|>
+  filter(!(Veranstaltungstitel %in% LV_fr$Veranstaltungstitel))|>
+  filter(!(Veranstaltungstitel %in% LV_m$Veranstaltungstitel))|>
+  filter(Veranstaltungstitel != "Einführung in die Papyrologie") |> # 1 Kurs in Leipzig 
+  filter(Veranstaltungstitel != "Masterkurs lateinisch -
+deutsch Übersetzen") # 1 Kurs in Mainz
+
+## insgesamt: 27 Kurse weniger -> 696 Kurse sollten übrig bleiben
+
+# alten Datensatz überschreiben -- Code läuft wieder
+LV <- LV_neu
+```
+
+
+## group by semester
+--> Heraufinden, wie die Entwicklung der letzten Semester aussieht
+
+```{r UFG_semester_anzahl_kurse}
+
+library(viridis)
+
+LV |>
+  ggplot()+
+    geom_bar(aes(x = Semester))+
+  scale_fill_manual(values = viridis(1))+
+scale_x_discrete(drop = FALSE)+
+  labs(title = "Number of offerd courses",
+       y = "count")+
+   annotate(geom = "text",
+           label = paste0("n = ", nrow(LV) ),
+           x = 1,
+           y = 120)+
+  theme_bw()+
+  coord_flip()
+
+ggsave("./figures/courses_per_sem.png", dpi = 300)
+```
+
+## Verhältnis Städte zueinander 
+
+Hotspots: 
+
+```{r}
+
+library(forcats)
+
+LV |>
+  group_by(Semester, Stadt) |>
+  count(Semester, Stadt) |>
+  ggplot(aes(x =  reorder(Stadt, n, FUN = median),
+                   y = n))+
+  geom_boxplot(color = "black")+
+      geom_jitter(color="darkgrey", size=0.7, alpha=0.7,
+                  width = 0.4, 
+                  height = 0) +
+  coord_flip()+
+  labs(title = "Number of courses per semester and city", subtitle = "summer 2015 - winter 2018/19, summer 2020 - summer 2021, summer 2023" )+
+    geom_text(label = paste0("n = ", nrow(LV), "courses"),
+           x = 1,
+           y = 25)+
+  labs(x = "") + 
+  theme_bw()
+
+ggsave("./figures/courses_per_sem_city_jitter.png", dpi = 300)
+```
+
+
+## Course topices
+
+
+```{r zählen der Themen}
+
+library(stringr)
+library(tidyr)
+
+LV_inh <- LV |>
+   separate(Inhalte, c("A", "B","C","D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF"), sep = ",")
+
+
+
+LV_n <- LV_inh |>
+ gather(key = "placenr",
+ value = "inhalt_neu", 
+ c("A":"AF"),
+ na.rm = TRUE)
+
+LV_n$inhalt_neu <- str_replace_all(LV_n$inhalt_neu, "[\n]" , "")
+
+LV_n <- LV_n |>
+  mutate(inhalt_neu2 = case_when(
+    inhalt_neu == "Dig.Editieren" ~ "Dig. Editieren",
+    inhalt_neu == "DigitalHumanities" ~ "Digital Humanities",
+    inhalt_neu == "Dig.Methoden & Theorien" ~ "Dig. Methoden & Theorien",
+    inhalt_neu == "DigitaleDatenauswertung" ~ "Digitale Datenauswertung",
+    inhalt_neu == "DigitaleRessourcen" ~ "Digitale Ressourcen",
+    inhalt_neu == "DigitaleVermessung" ~ "Digitale Vermessung",
+    str_detect(inhalt_neu, "Softwareund Tools|Software undTools") ~ "Software und Tools",
+    inhalt_neu == "SpatialAnalysis" ~ "Spatial Analysis",
+    inhalt_neu == "Dig. Methoden &Theorien" ~ "Dig. Methoden & Theorien",
+    inhalt_neu == "DigitaleDokumentation" ~ "Digitale Dokumentation",
+    inhalt_neu == "3DScan" ~ "3D Scan",
+    str_detect(inhalt_neu,"Audio undVideo|Audiound Video") ~ "Audio und Video",
+        TRUE ~ inhalt_neu
+  ))
+
+
+
+library(dplyr)
+
+inhalte <- LV_n |>
+  count(inhalt_neu2)|>
+  filter(inhalt_neu2 != "")
+
+LV_n$inhalt_neu2 <- factor(LV_n$inhalt_neu2, levels =  c("3D", "3D Scan", "Laserscanning" , "3D-Modellierung",  "CAD" ,"Photogrammetrie", "Digitale Vermessung", "Geophysik"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistik", "Digitale Datenauswertung" ,  "EDV" , "Datenpräsentation", "R", "Auszeichnungssprachen"  ,  "Programmierung"  ,   "Software und Tools", "Dig. Methoden & Theorien", "Datenmanagement","Datenbanken","Datenkuratierung",  "Metadaten", "Archivierung"  ,  "Digital Humanities"   ,    "Textanalyse"  , "Dig. Editieren"  ,   "Ausgrabungsdokumentation", "Digitalisierung"   , "Digitale Dokumentation",     "Visualisierung"  ,  "Zeichnen","Bildbearbeitung"  , "Fotografie" , "Audio und Video", "Digitale Ressourcen", "Webtechnologien",  "Internet", "Web-Kartierung" , "Online-Ressourcen" ) )
+
+zahl <- nrow(LV |> filter(!is.na(Inhalte)))
+```
+
+
+
+```{r stadt_inhalt_all_heatmap}
+
+library(forcats)
+
+LV_inh_st <- as.data.frame(table(LV_n$inhalt_neu2, LV_n$Stadt) )
+colnames(LV_inh_st) <- c("Inhalt", "Stadt", "n")
+
+LV_inh_st_sum <- LV_inh_st |> 
+  group_by(Stadt) |> 
+  summarize(sum = sum(n))
+
+LV_inh_st_sum_i <- LV_inh_st |> 
+  group_by(Inhalt) |> 
+  summarize(sum_inhalt = sum(n))
+
+
+LV_inh_st <- left_join(LV_inh_st, LV_inh_st_sum, by = "Stadt")
+LV_inh_st <- left_join(LV_inh_st, LV_inh_st_sum_i, by = "Inhalt")
+
+
+LV_inh_st$Inhalt <- factor(LV_inh_st$Inhalt, ordered = TRUE ,levels = c("3D", "3D Scan", "Laserscanning" , "3D-Modellierung",  "CAD" ,"Photogrammetrie", "Digitale Vermessung", "Geophysik"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistik", "Digitale Datenauswertung" ,  "EDV" , "Datenpräsentation", "R", "Auszeichnungssprachen"  ,  "Programmierung"  ,   "Software und Tools", "Dig. Methoden & Theorien", "Datenmanagement","Datenbanken","Datenkuratierung",  "Metadaten", "Archivierung"  ,  "Digital Humanities"   ,    "Textanalyse"  , "Dig. Editieren"  ,   "Ausgrabungsdokumentation", "Digitalisierung"   , "Digitale Dokumentation",     "Visualisierung"  ,  "Zeichnen","Bildbearbeitung"  , "Fotografie" , "Audio und Video", "Digitale Ressourcen", "Webtechnologien",  "Internet", "Web-Kartierung" , "Online-Ressourcen" ) )
+
+
+# version für Publikation:
+LV_inh_st |>
+  ggplot(aes(x = Inhalt,
+             y = Stadt) )+
+  geom_tile(aes(fill =  round((n/sum_inhalt)*100, 1 ) ))+
+   geom_text(aes(label = n),  size = 3.5, col = "white" ) + 
+  scale_fill_gradientn(colours = cols,   
+                    values = rescale(c(0,1,2,3,4,5,10,15,20,25,50,75,100) ),
+                    guide = "colorbar", limits = c(0,100) ) +
+  scale_x_discrete(labels = c("3D", "3D Scan", "Laserscanning" , "3D-Modelling",  "CAD" ,"Photogrammetry", "Digital survey", "Geophysics"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistics", "Dig. data analysis" ,  "Dig. data processing" , "Data presentation", "R", "Mark-up languages"  ,  "Programming"  ,   "Software & Tools", "Dig. Methods & Theories", "Data management","Databasis","Data curating",  "Metadata", "Archiving"  ,  "Digital Humanities"   ,    "Text analysis"  , "Dig. Editing"  ,   "Excavation documentation ", "Digitization"   , "Dig. Documentation",     "Visualisation"  ,  "Drawing","Image processing"  , "Photography" , "Audio & Video", "Dig. Ressources", "Webtechnologies",  "Internet", "Web-Mapping" , "Online-Ressources" ))+
+    labs(x = "",
+       y = "",
+       fill = "Percentage of total \nnumbers of this tag") + 
+  theme_bw()+
+  theme(axis.text.x = element_text(angle=60,hjust=1))
+
+ggsave("./figures/content_city_heatmap_eng.png", dpi = 300, width = 25, height = 15, units = "cm")        
+
+```
+
+
+```{r semester_inhalt_heatmap}
+
+LV_sm_inhalt <- as.data.frame(table(LV_n$Semester, LV_n$inhalt_neu2))
+
+LV_sm_inhalt |>
+  ggplot(aes(x = Var1, 
+                y = Var2 ) )+
+  geom_tile(aes(fill = Freq))+
+   geom_text(aes(label = Freq),  size = 3.5, col = "white" ) + 
+  scale_fill_gradientn(colours = cols,   
+                    values = rescale(c(0,1,2,3,4, 5,10,15,20, 30, 51) ),
+                    guide = "colorbar", limits = c(0,51) ) +
+    scale_y_discrete(labels = c("3D", "3D Scan", "Laserscanning" , "3D-Modelling",  "CAD" ,"Photogrammetry", "Digital survey", "Geophysics"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistics", "Dig. data analysis" ,  "Dig. data processing" , "Data presentation", "R", "Mark-up languages"  ,  "Programming"  ,   "Software & Tools", "Dig. Methods & Theories", "Data management","Databasis","Data curating",  "Metadata", "Archiving"  ,  "Digital Humanities"   ,    "Text analysis"  , "Dig. Editing"  ,   "Excavation documentation ", "Digitization"   , "Dig. Documentation",     "Visualisation"  ,  "Drawing","Image processing"  , "Photography" , "Audio & Video", "Dig. Ressources", "Webtechnologies",  "Internet", "Web-Mapping" , "Online-Ressources" ))+
+    labs(x = "",
+       y = "",
+       fill = "n tags")+ 
+  theme_bw()+
+  theme(axis.text.x = element_text(angle=60,hjust=1))
+
+ggsave("./figures/Sem_ceontent_Heatmap_eng.png", dpi = 300)
+```
+
+## target group
+
+```{r zielgruppe}
+# 
+LV_2 <- LV |>
+  mutate(BA = case_when(
+    str_detect(Zielgruppe, "BA") ~ 1,
+    TRUE ~0
+  )) |>
+    mutate(MA = case_when(
+    str_detect(Zielgruppe, "MA") ~ 1,
+    TRUE ~0
+  )) |>
+    mutate(PhD = case_when(
+    str_detect(Zielgruppe, "Dokt") ~ 1,
+    TRUE ~0
+  )) |>
+    mutate(sonst = case_when(
+    str_detect(Zielgruppe, "Sonst") ~ 1,
+    TRUE ~0
+  ))
+
+  # aufsummieren der Spalten nach Semester und dann das darstellen -> Entwicklung der Kursangebote für verschiedene Zielgruppen
+
+zielgruppe <- LV_2 |>
+  group_by(Semester) |>
+  summarise_at(c("BA", "MA", "PhD", "sonst"), sum)
+```
+
+
+```{r zielgruppe_semester}
+library(viridis)
+library(tidyr)
+
+zielgruppe <- zielgruppe |>
+  filter(!is.na(Semester))
+
+
+zg <- zielgruppe |>
+  filter(!is.na(Semester)) |>
+  pivot_longer(cols=c("BA", "MA", "PhD", "sonst"),
+                    names_to='ziel',
+                    values_to='yn')
+
+zg$yn <- as.numeric(zg$yn)
+```
+
+
+
+### Zielgruppe zu LV-Form
+
+```{r heatmap Zielgruppe_Veranstaltungsform}
+LV_zgr <- as.data.frame(table(LV$Zielgruppe,
+                              LV$Veranstaltungstyp))
+
+  
+LV_zgr |>
+filter(Freq > 1) |>
+  ggplot(aes(x = Var1, 
+                y = reorder(Var2, Freq) ) )+
+  geom_tile(aes(fill = Freq))+
+   geom_text(aes(label = round( (Freq/sum(LV_zgr$Freq[LV_zgr$Freq > 1]) )*100, 1 )),  size = 3.5, col = "white" ) + 
+  scale_fill_gradientn(colours = cols,
+                    values = rescale(c(0,5, 25, 50,70,80,90,100,110,120,130) ),
+                    guide = "colorbar", limits = c(0,125) ) +
+    labs(x = "",
+       y = "",
+       fill = "Number of courses",
+       caption = paste0("n courses = ", sum(LV_zgr$Freq[LV_zgr$Freq > 1]) ,"\n(filtered to min. 2 in cross tabulation)" ) )+ 
+  scale_x_discrete(labels = c("BA", "MA", "BA, MA & PhD", "BA, MA, other", "MA", "MA, PhD"))+
+  scale_y_discrete(labels = c("field trips",
+                              "Colloquia",
+                              "Workshops",
+                                "Advanced sem. course",
+                              "Lectures",
+                              "Introductory sem. course",
+                             "Practical",
+                              "Seminar",
+                              "Exercise") )+
+  geom_text(label = paste0("Label describes percentage of all"),
+            x = 4.5,
+            y = 1)+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle=60,hjust=1))
+
+ggsave("./figures/heatmap_target_group_course_type_eng.png", dpi = 300)
+```
+
+
+### andersherum
+
+```{r}
+LV_zgr <- as.data.frame(table(LV$Zielgruppe,
+                              LV$Veranstaltungstyp))
+
+  
+LV_zgr |>
+filter(Freq > 1) |>
+  ggplot(aes(x = Var1, 
+                y = reorder(Var2, Freq) ) )+
+  geom_tile(aes(fill = round( (Freq/sum(LV_zgr$Freq[LV_zgr$Freq > 1]) )*100, 1 )) )+
+   geom_text(aes(label = Freq ),  size = 3.5, col = "white" ) + 
+    scale_fill_gradientn(colours = cols,
+                    values = rescale(c(0,1,2,3,4,5,10,15,20, 25) ),
+                    guide = "colorbar", limits = c(0,25) ) +
+    labs(x = "",
+       y = "",
+       fill = "Percentage of courses",
+       caption = paste0("n courses = ", sum(LV_zgr$Freq[LV_zgr$Freq > 1]) ,"\n(filtered to min. 2 in cross tabulation)" ) )+ 
+  scale_x_discrete(labels = c("BA", "MA", "BA, MA & PhD", "BA, MA, other", "MA", "MA, PhD"))+
+  scale_y_discrete(labels = c("field trips",
+                              "Colloquia",
+                              "Workshops",
+                                "Advanced sem. course",
+                              "Lectures",
+                              "Introductory sem. course",
+                             "Practical",
+                              "Seminar",
+                              "Exercise") )+
+  geom_text(label = "Label shows absolute numbers",
+            x = 4.3,
+            y = 1)+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle=60,hjust=1))
+
+ggsave("./figures/heatmap_target_group_course_type_flip_eng.png", dpi = 300)
+
+```
+
+
+
