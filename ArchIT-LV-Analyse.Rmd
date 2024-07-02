@@ -9,6 +9,14 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+- TODO: Datensatz vervollständigen mit: 
+  - SoSe 2019: https://web.archive.org/web/20190815131304/https://www.ianus-fdz.de/it-empfehlungen/lehrangebote
+  - check weitere Waybackmachine einträge für WiSe 21/22, SoSe 22 und WiSE 22/23 + Wise 23/24 und SoSe 24
+
+
+
+
 # Analyse der Lehrveranstaltungen bei IANUS
 
 - Hier nur enige Kommentare zur Datenbereinigung und Auffälligkeiten. Eigentliche Interpretation dann im Artikel
