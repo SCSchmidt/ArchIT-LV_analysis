@@ -9,7 +9,12 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Analysis of courses in IANUS
+# Analysis of courses in IANUS collection 
+
+- see data: https://ianus-fdz.de/lehrangebote
+
+- the analysis is part of the paper Schmidt, Hageneuer, in prep., Digital and Computational Archaeology in Germany, it - information technology Sonderheft "Kleine Fächer Digital" , De Gruyter 
+
 
 ## load data
 ```{r}
@@ -69,7 +74,6 @@ LV <- LV_neu
 
 
 ## group by semester
---> Heraufinden, wie die Entwicklung der letzten Semester aussieht
 
 ```{r UFG_semester_anzahl_kurse}
 
@@ -92,7 +96,7 @@ scale_x_discrete(drop = FALSE)+
 ggsave("./figures/courses_per_sem.png", dpi = 300)
 ```
 
-## Verhältnis Städte zueinander 
+## Cities and nr of courses
 
 Hotspots: 
 
@@ -121,9 +125,40 @@ ggsave("./figures/courses_per_sem_city_jitter.png", dpi = 300)
 ```
 
 
+### Institutions and nr of courses
+```{r}
+
+library(forcats)
+library(stringr)
+#mutate : Humboldt-Uni und BBAW -> zu nur HU
+
+LV |>
+  mutate(Einrichtung = case_when(
+    str_detect(Einrichtung, "Humboldt" ) ~ "Humboldt Universität zu Berlin",
+               TRUE ~ Einrichtung ) ) |>
+  group_by(Semester, Einrichtung) |>
+  count(Semester, Einrichtung) |>
+  ggplot(aes(x =  reorder(Einrichtung, n, FUN = median),
+                   y = n))+
+  geom_boxplot(color = "black")+
+      geom_jitter(color="darkgrey", size=0.7, alpha=0.7,
+                  width = 0.4, 
+                  height = 0) +
+  coord_flip()+
+  labs(title = "Courses per semester and institution", 
+       caption =  paste0("SuSe 2015 - WiSe 2018/19, SuSe 2020 - SuSe 2021 & SuSe 2023","\nn = ", nrow(LV), " courses" ) )+
+  labs(x = "") + 
+  theme_bw()
+
+ggsave("./figures/courses_per_sem_institution_jitter.png", dpi = 300)
+
 ## Course topices
 
+```
 
+
+
+## Course Topics by Institution
 ```{r zählen der Themen}
 
 library(stringr)
@@ -218,6 +253,59 @@ ggsave("./figures/content_city_heatmap_eng.png", dpi = 300, width = 25, height =
 ```
 
 
+
+
+
+```{r einrichtung_inhalt_all_data}
+library(forcats)
+
+LV_einr <- LV_n |>  
+  mutate(Einrichtung = case_when(
+    str_detect(Einrichtung, "Humboldt" ) ~ "Humboldt Universität zu Berlin",
+               TRUE ~ Einrichtung ) )
+
+LV_inh_einr <- as.data.frame(table(LV_einr$inhalt_neu2, LV_einr$Einrichtung) )
+colnames(LV_inh_einr) <- c("Inhalt", "Einrichtung", "n")
+
+LV_inh_einr_sum <- LV_inh_einr |> 
+  group_by(Einrichtung) |> 
+  summarize(sum = sum(n))
+
+LV_inh_einr_sum_i <- LV_inh_einr |> 
+  group_by(Inhalt) |> 
+  summarize(sum_inhalt = sum(n))
+
+
+LV_inh_einr <- left_join(LV_inh_einr, LV_inh_einr_sum, by = "Einrichtung")
+LV_inh_einr <- left_join(LV_inh_einr, LV_inh_einr_sum_i, by = "Inhalt")
+
+
+LV_inh_einr$Inhalt <- factor(LV_inh_einr$Inhalt, ordered = TRUE ,levels = c("3D", "3D Scan", "Laserscanning" , "3D-Modellierung",  "CAD" ,"Photogrammetrie", "Digitale Vermessung", "Geophysik"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistik", "Digitale Datenauswertung" ,  "EDV" , "Datenpräsentation", "R", "Auszeichnungssprachen"  ,  "Programmierung"  ,   "Software und Tools", "Dig. Methoden & Theorien", "Datenmanagement","Datenbanken","Datenkuratierung",  "Metadaten", "Archivierung"  ,  "Digital Humanities"   ,    "Textanalyse"  , "Dig. Editieren"  ,   "Ausgrabungsdokumentation", "Digitalisierung"   , "Digitale Dokumentation",     "Visualisierung"  ,  "Zeichnen","Bildbearbeitung"  , "Fotografie" , "Audio und Video", "Digitale Ressourcen", "Webtechnologien",  "Internet", "Web-Kartierung" , "Online-Ressourcen" ) )
+```
+
+
+
+
+```{r einrichtung_inhalt_all_heatmap}
+LV_inh_einr |>
+  ggplot(aes(x = Inhalt,
+             y = reorder(Einrichtung, n, .fun='median')) )+
+  geom_tile(aes(fill =  round((n/sum_inhalt)*100, 1 ) ))+
+   geom_text(aes(label = n),  size = 3, col = "white" ) + 
+  scale_fill_gradientn(colours = cols,   
+                    values = rescale(c(0,1,2,3,4,5,10,15,20,25,50,75,100) ),
+                    guide = "colorbar", limits = c(0,100) ) +
+  scale_x_discrete(labels = c("3D", "3D Scan", "Laserscanning" , "3D-Modelling",  "CAD" ,"Photogrammetry", "Digital survey", "Geophysics"  , "GIS",    "Spatial Analysis" ,  "Space Syntax",  "Statistics", "Dig. data analysis" ,  "Dig. data processing" , "Data presentation", "R", "Mark-up languages"  ,  "Programming"  ,   "Software & Tools", "Dig. Methods & Theories", "Data management","Databasis","Data curating",  "Metadata", "Archiving"  ,  "Digital Humanities"   ,    "Text analysis"  , "Dig. Editing"  ,   "Excavation documentation ", "Digitization"   , "Dig. Documentation",     "Visualisation"  ,  "Drawing","Image processing"  , "Photography" , "Audio & Video", "Dig. Ressources", "Webtechnologies",  "Internet", "Web-Mapping" , "Online-Ressources" ))+
+    labs(x = "",
+       y = "",
+       fill = "% of total count \nof this keyword") + 
+  theme_bw()+
+  theme(axis.text.x = element_text(angle=60,hjust=1))
+
+ggsave("./figures/content_institution_heatmap_eng.png", dpi = 300, width = 25, height = 15, units = "cm")        
+
+```
+
 ```{r semester_inhalt_heatmap}
 
 LV_sm_inhalt <- as.data.frame(table(LV_n$Semester, LV_n$inhalt_neu2))
@@ -289,7 +377,7 @@ zg$yn <- as.numeric(zg$yn)
 
 
 
-### Zielgruppe zu LV-Form
+### target group and course type
 
 ```{r heatmap Zielgruppe_Veranstaltungsform}
 LV_zgr <- as.data.frame(table(LV$Zielgruppe,
@@ -309,7 +397,7 @@ filter(Freq > 1) |>
        y = "",
        fill = "Number of courses",
        caption = paste0("n courses = ", sum(LV_zgr$Freq[LV_zgr$Freq > 1]) ,"\n(filtered to min. 2 in cross tabulation)" ) )+ 
-  scale_x_discrete(labels = c("BA", "MA", "BA, MA & PhD", "BA, MA, other", "MA", "MA, PhD"))+
+  scale_x_discrete(labels = c("BA", "BA, MA", "BA, MA & PhD", "BA, MA, other", "MA", "MA, PhD"))+
   scale_y_discrete(labels = c("field trips",
                               "Colloquia",
                               "Workshops",
@@ -329,9 +417,11 @@ ggsave("./figures/heatmap_target_group_course_type_eng.png", dpi = 300)
 ```
 
 
-### andersherum
 
-```{r}
+
+```{r heatmap Zielgruppe_Veranstaltungsform percentage flipped}
+
+# switch depiction
 LV_zgr <- as.data.frame(table(LV$Zielgruppe,
                               LV$Veranstaltungstyp))
 
@@ -349,7 +439,7 @@ filter(Freq > 1) |>
        y = "",
        fill = "Percentage of courses",
        caption = paste0("n courses = ", sum(LV_zgr$Freq[LV_zgr$Freq > 1]) ,"\n(filtered to min. 2 in cross tabulation)" ) )+ 
-  scale_x_discrete(labels = c("BA", "MA", "BA, MA & PhD", "BA, MA, other", "MA", "MA, PhD"))+
+  scale_x_discrete(labels = c("BA", "BA, MA", "BA, MA & PhD", "BA, MA, other", "MA", "MA, PhD"))+
   scale_y_discrete(labels = c("field trips",
                               "Colloquia",
                               "Workshops",
