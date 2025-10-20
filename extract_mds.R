@@ -93,7 +93,7 @@ wise23 <- plyr::rbind.fill(wise23, d4)
 
 #readODS::write_ods(wise23, "./IANUS-LV-MDs/wise23-24.ods")
 
-readODS::write_ods(wise23, "./IANUS-LV-MDs/sose2424.ods")
+readODS::write_ods(wise23, "./IANUS-LV-MDs/sose2024.ods")
 
 
 ## check for those that didn't work
