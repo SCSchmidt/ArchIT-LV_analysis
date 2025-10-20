@@ -12,11 +12,11 @@ zielgruppe:
 
 inhalte:
 
--Archivierung
--Datenbanken
--Datenmanagement
--Digitale Datenauswertung
--Digitale Dokumentation
+  - Archivierung
+  - Datenbanken
+  - Datenmanagement
+  - Digitale Datenauswertung
+  - Digitale Dokumentation
 ---
  
 

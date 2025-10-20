@@ -19,9 +19,4 @@ inhalte:
   - Dig. Methoden & Theorien
   - 3D
 
- 
-  
 ---
- 
-
-
