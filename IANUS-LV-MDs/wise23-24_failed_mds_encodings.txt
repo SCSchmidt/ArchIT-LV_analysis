@@ -1,0 +1,15 @@
+dat - encoding
+muenchen_advancingtothedigitalfrontier_ue.md - ISO8859-15
+muenchen_ArchaeologieImZeitalterKI_ue.md - UTF-8
+muenchen_digitalimagingforculturalheritageandarchaeology_ue.md - ISO8859-15
+muenchen_heritagetobytes_vl.md - UTF-8
+muenchen_introductiontogeographicalinformationsystemsforheritageandarchaeology_ue.md - ISO8859-15
+muenchen_linkedopendata_se.md - UTF-8
+muenchen_museumsandvirtualmuseums_se.md - UTF-8
+muenster_auswertungeinerausgrabungsdokumentation_se.md - UTF-8
+muenster_gis_se.md - UTF-8
+muenster_muenzpraegungimgallischensonderreich_ue.md - UTF-8
+saarbruecken_einfuehrunginqgis_ue.md - ISO8859-15
+saarbruecken_qgis2_pr.md - UTF-8
+saarbruecken_vomfotozummodell_ue.md - ISO8859-15
+wuerzburg_datenbankenzurantike_se.md - UTF-8

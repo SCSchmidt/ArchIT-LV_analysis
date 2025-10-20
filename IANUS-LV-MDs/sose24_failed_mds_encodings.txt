@@ -1,0 +1,22 @@
+dat - encoding
+mainz_konzeptioneinerpopupausstellungzumprofilbereich40.000jahremenschlicheherausforderungen_pr.md - ISO8859-15
+Marburg_Medieval_castles_ps.md - UTF-8
+Marburg_mittelalterlicheBurgen_se.md - UTF-8
+muenster_einfuehrungindiearbeitmitgis_ue.md - UTF-8
+muenster_muenzpraegunginkleinasien_ue_.md - UTF-8
+muenster_theorieundanwendungstatistischermethoden_se.md - UTF-8
+münchen_digitalisierungarchive_ue.md - ISO8859-15
+münchen_heritageandthemachine_ue.md - UTF-8
+münchen_laserscanningmapping_ue.md - UTF-8
+münchen_lidarremotesensingandgisapplications_ue.md - UTF-8
+münchen_vermessunginderarchaeologie_ue.md - ISO8859-15
+münchen_webdesignforhumanists_ue.md - UTF-8
+saarbrücken_einführungindiesozialenetzwerkanalyse_ue.md - UTF-8
+saarbrücken_gisinderpraxis_ue.md - UTF-8
+saarbrücken_vonderzeichnungzum3dmodell_ue.md - ISO8859-15
+saarbrücken_zeichnenunddigitalisieren_ue.md - UTF-8
+saarbruecken_fernerkundung_ue.md - UTF-8
+saarbruecken_photogrammetrie2_ue.md - UTF-8
+template-lehrveranstaltung LMU.md - ISO8859-15
+template-lehrveranstaltung.md - ISO8859-15
+wuerzburg_digitaleobjekte_se.md - UTF-8
