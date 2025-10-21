@@ -47,7 +47,7 @@ d <- d |> dplyr::filter(i != "---")
 library(dplyr)
 library(stringr)
 
-# tabellenspaltenkopf vor die inhalte schreiben, um sie später teilen zu können. unschön epezifisch, aber klappt insgesamt
+# tabellenspaltenkopf vor die inhalte schreiben, um sie später teilen zu können. unschön spezifisch, aber klappt insgesamt
 
 d <- d |>
   dplyr::mutate(i = case_when(
