@@ -11,8 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 - TODO: Datensatz vervollständigen mit: 
-  - SoSe 2019: https://web.archive.org/web/20190815131304/https://www.ianus-fdz.de/it-empfehlungen/lehrangebote
-  - check weitere Waybackmachine einträge für WiSe 21/22, SoSe 22 und WiSE 22/23 + Wise 23/24 und SoSe 24
+  - SoSe 2019: https://web.archive.org/web/20190815131304/https://www.ianus-fdz.de/it-empfehlungen/lehrangebote -> done
+  - WiSe 19/20 -> fehlt
+  - check weitere Waybackmachine einträge für WiSe 21/22, -> done
+  - SoSe 22 -> no data in wayback machine
+   - und WiSE 22/23 -> webarchive
+  - Wise 23/24 und SoSe 24 -> von MD, done
 
 
 
@@ -25,9 +29,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(readODS)
 
+# 1. ODS in semi-Handarbeit aus PDFs extrahiert (Datensammlung für Veröffentlichungen 2024)
+
 LV <- read_ods("IANUS-LV_alle.ods")
 
-LV$Semester <- factor(LV$Semester, levels = c("WiSe 2014/15","SoSe 2015", "WiSe 2015/16", "SoSe 2016", "WiSe 2016/17", "SoSe 2017", "WiSe 2017/18", "SoSe 2018","WiSe 2018/19", "SoSe 2019", "WiSe 2019/20", "SoSe 2020", "WiSe 2020/21", "SoSe 2021", "WiSe 2021/22", "SoSe 2022", "WiSe 2022/23", "SoSe 2023"), ordered = TRUE)
 
 library(ggplot2)
 library(dplyr)
@@ -82,12 +87,75 @@ LV <- LV_neu
 ```
 
 
+## Einlesen der neuen Daten
+
+- Daten aus MD sind von Sebastian Hageneuer bereitgestellt worden
+- Daten aus Webarchive: Herzlichen Dank der Waybackmachine!
+
+```{r}
+## Update Oktober 2025: Extrahiert aus MD - Dateien und Waybackmachine (siehe extract_mds.R und extract_from_webarchive.R)
+
+sose_19 <- read_ods("IANUS_LV_SoSe2019.ods")
+
+sose_2019 <-data.frame(Semester = "SoSe 2019", Stadt = sose_19$Stadt, Einrichtung = sose_19$`Einrichtung/ Institut`, Institut = sose_19$`Einrichtung/ Institut`, `Studiengang/Modul` = sose_19$`Studiengang/ Modul`, Veranstaltungstitel = sose_19$`Veranstaltung (Link)`, Veranstaltungstyp = sose_19$Veranstaltungstyp, Zielgruppe = sose_19$Zielgruppe, Lehrende = sose_19$Lehrende, Inhalte = sose_19$Inhalte, Notiz  = NA, Nachname = NA, Vorname = NA, Position = NA)
+
+wise_21 <- read_ods("IANUS_LV_WiSe_2021-22.ods")
+
+wise_2021 <-data.frame(Semester = "WiSe 2021/22", Stadt = wise_21$Stadt, Einrichtung = wise_21$`Einrichtung/ Institut`, Institut = wise_21$`Einrichtung/ Institut`, `Studiengang/Modul` = wise_21$`Studiengang/ Modul`, Veranstaltungstitel = wise_21$`Veranstaltung (Link)`, Veranstaltungstyp = wise_21$Veranstaltungstyp, Zielgruppe = wise_21$Zielgruppe, Lehrende = wise_21$Lehrende, Inhalte = wise_21$Inhalte, Notiz  = NA, Nachname = NA, Vorname = NA, Position = NA)
+
+
+wise_22 <- read_ods("IANUS_LV_WiSe_2022-23.ods")
+
+wise_2022 <-data.frame(Semester = "WiSe 2022/23", Stadt = wise_22$Stadt, Einrichtung = wise_22$`Einrichtung/ Institut`, Institut = wise_22$`Einrichtung/ Institut`, `Studiengang/Modul` = wise_22$`Studiengang/ Modul`, Veranstaltungstitel = wise_22$`Veranstaltung (Link)`, Veranstaltungstyp = wise_22$Veranstaltungstyp, Zielgruppe = wise_22$Zielgruppe, Lehrende = wise_22$Lehrende, Inhalte = wise_22$Inhalte, Notiz  = NA, Nachname = NA, Vorname = NA, Position = NA)
+
+wise_23 <- read_ods("IANUS-LV-MDs/wise23-24.ods")
+
+wise_2023 <-data.frame(Semester = "WiSe 2023/24", Stadt = wise_23$stadt, Einrichtung = wise_23$einrichtung, Institut = wise_23$studiengang, `Studiengang/Modul` = wise_23$studiengang, Veranstaltungstitel = wise_23$title, Veranstaltungstyp = wise_23$lv.typ, Zielgruppe = wise_23$zielgruppe, Lehrende = wise_23$lehrende, Inhalte = wise_23$inhalte, Notiz  = wise_23$dat, Nachname = NA, Vorname = NA, Position = NA)
+
+
+sose_24 <- read_ods("IANUS-LV-MDs/sose2024.ods")
+
+sose_2024 <-data.frame(Semester = "SoSe 2024", Stadt = sose_24$stadt, Einrichtung = sose_24$einrichtung, Institut = sose_24$studiengang, `Studiengang/Modul` = sose_24$studiengang, Veranstaltungstitel = sose_24$title, Veranstaltungstyp = sose_24$lv.typ, Zielgruppe = sose_24$zielgruppe, Lehrende = sose_24$lehrende, Inhalte = sose_24$inhalte, Notiz  = sose_24$dat, Nachname = NA, Vorname = NA, Position = NA)
+
+
+neue_dat <- bind_rows(sose_2019, wise_2021, wise_2022, wise_2023, sose_2024)
+
+neue_dat$Veranstaltungstyp[neue_dat$Veranstaltungstyp == "VL"] <- "Vorlesung"
+neue_dat$Veranstaltungstyp[neue_dat$Veranstaltungstyp == "LV"] <- "Vorlesung"
+neue_dat$Veranstaltungstyp[neue_dat$Veranstaltungstyp == "V"] <- "Vorlesung"
+neue_dat$Veranstaltungstyp[neue_dat$Veranstaltungstyp == "SE"] <- "Seminar"
+neue_dat$Veranstaltungstyp[neue_dat$Veranstaltungstyp == "UE"] <- "Übung"
+neue_dat$Veranstaltungstyp[neue_dat$Veranstaltungstyp == "Ã?bung"] <- "Übung"
+
+
+
+neue_dat$komma <- str_count(neue_dat$Lehrende, pattern = ",")
+
+neue_dat <- neue_dat |>
+  mutate(Position = case_when(
+    str_detect(Lehrende, pattern = "Dr.") ~ "Dr." )  )
+
+LV <- bind_rows(LV, neue_dat)
+
+LV$Semester <- factor(LV$Semester, levels = c("WiSe 2014/15","SoSe 2015", "WiSe 2015/16", "SoSe 2016", "WiSe 2016/17", "SoSe 2017", "WiSe 2017/18", "SoSe 2018","WiSe 2018/19", "SoSe 2019", "WiSe 2019/20", "SoSe 2020", "WiSe 2020/21", "SoSe 2021", "WiSe 2021/22", "SoSe 2022", "WiSe 2022/23", "SoSe 2023", "WiSe 2023/24", "SoSe 2024"), ordered = TRUE)
+
+LV$Stadt[LV$Stadt == "Giessen"] <- "Gießen"
+LV$Stadt[LV$Stadt == "Frankfurt"] <- "Frankfurt a.M."
+
+LV$Zielgruppe <- gsub(LV$Zielgruppe, pattern = "Doktoranden", replacement = "PHD")
+LV$Zielgruppe <- gsub(LV$Zielgruppe, pattern = "BA, Ma", replacement = "BA, MA")
+
+
+```
+
+
 ## group by semester
 --> Heraufinden, wie die Entwicklung der letzten Semester aussieht
 
 ```{r UFG_semester_anzahl_kurse}
 
 library(viridis)
+
 
 LV |>
   mutate(UFG = case_when(
@@ -100,8 +168,9 @@ LV |>
   scale_fill_manual(values = viridis(2))+
 scale_x_discrete(drop = FALSE)+
   labs(fill = "Fächergruppe",
-       title = "Anzahl angebotener Kurse innerhalb eines UFG oder anderem Institut")+
-   annotate(geom = "text",
+       title = "Anzahl angebotener Kurse innerhalb eines UFG oder anderem Institut",
+       caption = "ab WiSe 2023/24 keine einheitliche Institutsangabe, hier Studiengang")+
+  annotate(geom = "text",
            label = paste0("n = ", nrow(LV |> filter(!is.na(Institut)))),
            x = 1,
            y = 120)+
@@ -109,6 +178,8 @@ scale_x_discrete(drop = FALSE)+
   coord_flip()
 
 ggsave("./figures/Kurse_UFG_Semester.png", dpi = 300)
+
+
 ```
 
 ## Verhältnis Städte zueinander 
@@ -129,15 +200,16 @@ LV |>
                   width = 0.4, 
                   height = 0) +
   coord_flip()+
-  labs(title = "Anzahl Kurse im Semester", subtitle = "SoSe 2015 - WiSe 2018/19, SoSe 2020 - SoSe 2021, SoSe 2023" )+
+  labs(title = "Anzahl Kurse im Semester", subtitle = "SoSe 2015 - SoSe 2024, ohne WiSe 2019/20, SoSe 2022" )+
     geom_text(label = paste0("n = ", nrow(LV)),
-           x = 1,
+           x = 1.5,
            y = 25)+
   labs(x = "") + 
   theme_bw()
 
 ggsave("./figures/pro_Semester_Stadt_jitter.png", dpi = 300)
 ```
+
 ```{r}
 LV_sem_Stadt <- as.data.frame(table(LV$Semester, LV$Stadt))
 LV_sem_Stadt$Freq <- as.numeric(LV_sem_Stadt$Freq)
@@ -204,7 +276,7 @@ LV_2 <- LV |>
     TRUE ~0
   )) |>
     mutate(PhD = case_when(
-    str_detect(Zielgruppe, "Dokt") ~ 1,
+    str_detect(Zielgruppe, "PHD") ~ 1,
     TRUE ~0
   )) |>
     mutate(sonst = case_when(
@@ -260,7 +332,7 @@ ggsave("./figures/Zielgruppen_Semester.png", dpi = 300)
 ```
 
 
-```{r zielgruppen originalformat}
+```{r zielgruppen originalformat, eval=FALSE}
 zielgr_einfach <- as.data.frame(table(LV$Semester, LV$Zielgruppe))
 colnames(zielgr_einfach) <- c("Semester", "Zielgruppe", "n")
 
@@ -273,8 +345,8 @@ ggplot() +
                fill = Zielgruppe))+
         scale_x_discrete(drop = FALSE ) +
    scale_fill_manual(name = "Zielgruppe",
-                      breaks = c("ba", "ma","doktoranden",  "ba, ma", "ba, ma, doktoranden", "ba, ma, sonstige"  ,"ba, sonstige", "ma, doktoranden","ma, sonstige"),
-                     values = viridis(9))  +
+                      breaks = c("ba", "ma","doktoranden",  "ba, ma", "ba, ma, doktoranden", "ba, ma, sonstige"  ,"ba, sonstige", "ma, doktoranden","ma, sonstige"), # veraltet weil phd als neue bezeichnung dazu
+                     values = viridis(12))  +
   ylim(c(0,100))+
   labs(y = "Anzahl Kurse",
        title = "Zielgruppen der angebotenen Kurse")+
@@ -459,6 +531,7 @@ zahl <- nrow(LV |> filter(!is.na(Inhalte)))
 library(forcats)
 
 LV_n |>
+  filter(!is.na(inhalt_neu2)) |>
   ggplot()+
   geom_bar(aes(x = fct_rev(fct_infreq(Stadt) ),
                fill = inhalt_neu2) )+
