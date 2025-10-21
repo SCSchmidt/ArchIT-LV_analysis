@@ -78,7 +78,51 @@ wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Tutorium", r
 
 wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Doktoranden/innen", replacement = "PHD")
 
+wise_2021$Semester <- "WiSe 2021/22"
+
 write_ods(wise_2021, "IANUS_LV_WiSe_2021-22.ods")
 
 
+### WiSe 2022/23
+
+
+url <- "https://web.archive.org/web/20221110133403/https://ianus-fdz.de/it-empfehlungen/lehrangebote"
+
+
+df <- url |>
+  read_html()  |>
+  html_nodes("table")  |>
+  html_table(fill = T) 
+
+
+wise_2022 <- df[[2]]
+
+
+wise_2022 <- wise_2022 |>
+  mutate(Veranstaltungstyp = case_when(
+    str_detect(`LV-typ/ Zielgruppe`, "Seminar|seminar") ~ "Seminar",
+    str_detect(`LV-typ/ Zielgruppe`, "Übung") ~ "Übung",
+    str_detect(`LV-typ/ Zielgruppe`, "Vorles") ~ "Vorlesung",
+    str_detect(`LV-typ/ Zielgruppe`, "Prakt") ~ "Praktikum",
+    str_detect(`LV-typ/ Zielgruppe`, "Worksh") ~ "Workshop",
+    str_detect(`LV-typ/ Zielgruppe`, "Kollo") ~ "Kolloquium",
+    str_detect(`LV-typ/ Zielgruppe`, "Tutor") ~ "Tutorium" ) )
+
+wise_2022 <- wise_2022 |>
+  mutate(Zielgruppe =  `LV-typ/ Zielgruppe`)
+
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Seminar", replacement = "")
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Hauptseminar", replacement = "")
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Übung", replacement = "")
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Vorlesung", replacement = "")
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Praktikum", replacement = "")
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Workshop", replacement = "")
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Kolloquium", replacement = "")
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Tutorium", replacement = "")
+
+wise_2022$Zielgruppe <-  gsub(x = wise_2022$Zielgruppe , pattern = "Doktoranden/innen", replacement = "PHD")
+
+wise_2022$Semester <- "WiSe 2022/23"
+
+write_ods(wise_2022, "IANUS_LV_WiSe_2022-23.ods")
 
