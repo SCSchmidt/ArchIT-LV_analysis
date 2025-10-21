@@ -65,13 +65,20 @@ wise_2021 <- wise_2021 |>
     str_detect(`LV-typ/ Zielgruppe`, "Tutor") ~ "Tutorium" ) )
 
 wise_2021 <- wise_2021 |>
-  mutate(Zielgruppe = case_when(
-    str_detect(`LV-typ/ Zielgruppe`, "BA, MA, Doktorand/innen") ~ "BA, MA, PHD",
-    str_detect(`LV-typ/ Zielgruppe`, "BA, MA, Sonstige") ~ "BA, MA, Sonstige",
-    str_detect(`LV-typ/ Zielgruppe`, "MA, Doktorand/innen, Sonstige") ~ "MA, PHD, Sonstige",
-    str_detect(`LV-typ/ Zielgruppe`, "MA, Doktorand/innen") ~ "MA, PHD",
-    str_detect(`LV-typ/ Zielgruppe`, "BA, MA") ~ "BA, MA",
-    str_detect(`LV-typ/ Zielgruppe`, "BA, Sonstige") ~ "BA, Sonstige",
-    str_detect(`LV-typ/ Zielgruppe`, "BA") ~ "BA",
-    str_detect(`LV-typ/ Zielgruppe`, "MA") ~ "MA"
-  ))
+  mutate(Zielgruppe =  `LV-typ/ Zielgruppe`)
+
+
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Seminar", replacement = "")
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Übung", replacement = "")
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Vorlesung", replacement = "")
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Praktikum", replacement = "")
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Workshop", replacement = "")
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Kolloquium", replacement = "")
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Tutorium", replacement = "")
+
+wise_2021$Zielgruppe <-  gsub(x = wise_2021$Zielgruppe , pattern = "Doktoranden/innen", replacement = "PHD")
+
+write_ods(wise_2021, "IANUS_LV_WiSe_2021-22.ods")
+
+
+
