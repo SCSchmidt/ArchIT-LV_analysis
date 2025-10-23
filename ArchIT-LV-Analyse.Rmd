@@ -149,8 +149,33 @@ LV$Zielgruppe <- gsub(LV$Zielgruppe, pattern = "BA, Ma", replacement = "BA, MA")
 ```
 
 
+
+
 ## group by semester
 --> Heraufinden, wie die Entwicklung der letzten Semester aussieht
+
+```{r semester_anzahl_kurse}
+
+
+
+LV |>
+  ggplot()+
+    geom_bar(aes(x = Semester))+
+  scale_fill_manual(values = viridis(2))+
+scale_x_discrete(drop = FALSE)+
+  labs(title = "Anzahl angebotener Kurse insgesamt")+
+  annotate(geom = "text",
+           label = paste0("n = ", nrow(LV |> filter(!is.na(Institut)))),
+           x = 1,
+           y = 120)+
+  theme_bw()+
+  coord_flip()
+
+ggsave("./figures/Kurse_Semester.png", dpi = 300)
+
+
+```
+
 
 ```{r UFG_semester_anzahl_kurse}
 
@@ -375,8 +400,8 @@ filter(Freq > 1) |>
   geom_tile(aes(fill = Freq))+
    geom_text(aes(label = round( (Freq/sum(LV_zgr$Freq[LV_zgr$Freq > 1]) )*100, 1 )),  size = 3.5, col = "white" ) + 
   scale_fill_gradientn(colours = cols,
-                    values = rescale(c(0,5, 25, 50,70,80,90,100,110,120,130) ),
-                    guide = "colorbar", limits = c(0,125) ) +
+                    values = rescale(c(0,5, 25, 50,70,80,90,100,110,120,130,150,180) ),
+                    guide = "colorbar", limits = c(0,174) ) +
     labs(x = "",
        y = "",
        fill = "Anzahl gemeldeter Kurse \n(min 2 in der Kreuztabelle)")+ 
@@ -559,7 +584,6 @@ ggsave("./figures/Inhalte_all_Stadt.png", dpi = 300, width = 25, height = 15, un
 
 
 ```{r stadt_inhalt_all_heatmap}
-
 library(forcats)
 
 LV_inh_st <- as.data.frame(table(LV_n$inhalt_neu2, LV_n$Stadt) )
@@ -586,7 +610,7 @@ LV_inh_st |>
   ggplot(aes(x = Inhalt,
              y = Stadt) )+
   geom_tile(aes(fill = n))+
-   geom_text(aes(label = round((n/sum)*100, 1 ) ),  size = 3.5, col = "white" ) + 
+   geom_text(aes(label = round((n/sum)*100, 1 ) ),  size = 3, col = "white" ) + 
   scale_fill_gradientn(colours = cols,   
                     values = rescale(c(0,1,2,3,4,5,10,15,20, 38) ),
                     guide = "colorbar", limits = c(0,38) ) +
@@ -599,22 +623,25 @@ LV_inh_st |>
 
 
 LV_inh_st |>
-  ggplot(aes(x = Inhalt,
-             y = Stadt) )+
+  ggplot(aes(x = reorder(Inhalt, -sum_inhalt) ,
+             y =  reorder(Stadt, sum) ) ) +
   geom_tile(aes(fill =  round((n/sum)*100, 1 ) ))+
-   geom_text(aes(label = n),  size = 3.5, col = "white" ) + 
+   geom_text(aes(label = n),  size = 2.5, col = "white" ) + 
   scale_fill_gradientn(colours = cols,   
                     values = rescale(c(0,1,2,3,4,5,10,15,20,25,50,75,100) ),
                     guide = "colorbar", limits = c(0,100) ) +
     labs(x = "",
        y = "",
-       fill = "n d. Schlagworts \nin der Stadt / \nn d. Kurs \nin der Stadt")+ 
+       fill = "% d. Schlagworts\n in der Stadt",
+       caption = "label = n d. Schlagwortes in der Stadt")+ 
   theme_bw()+
   theme(axis.text.x = element_text(angle=60,hjust=1))
 
-ggsave("./figures/Inhalte_all_Stadt_heatmap_nach_Stadt.png", dpi = 300, width = 25, height = 15, units = "cm")        
+ggsave("./figures/Inhalte_all_Stadt_heatmap_nach_Stadt_ordered.png", dpi = 300, width = 25, height = 15, units = "cm")
+```
 
 
+```{r stadt_inhalt_all_heatmap_pub}
 # version für Publikation:
 LV_inh_st |>
   ggplot(aes(x = Inhalt,
@@ -703,6 +730,34 @@ LV_n <- LV_n |>
         TRUE ~ inhalt_neu2
   ))
 
+
+LV_n2 <- LV_n
+
+LV_n2$inhalt_neu2 <- as.character(LV_n2$inhalt_neu2)
+
+library(Polychrome)
+
+mypal <- c(kelly.colors(22), palette("R4"), viridis(11) )
+
+
+LV_n2 |>
+    filter(!is.na(inhalt_neu2)) |>
+  ggplot()+
+  geom_bar(aes(x =  fct_rev(fct_infreq(inhalt_gr) ) , fill = inhalt_neu2) )+
+  coord_flip() +
+  labs(title = "Themen der Lehrveranstaltungen",
+       y = "Anzahl der Kurse mit Schlagwort",
+       x = "gruppierte Themen",
+       fill = "")+
+  theme_bw()+
+  scale_fill_discrete(palette = mypal) +
+     theme(legend.position = "bottom",
+          legend.key.width = unit(0.3, "cm"),
+          legend.key.height = unit(0.3, "cm"),
+          legend.text = element_text(size = 8))
+  
+ggsave("./figures/themen_gruppiert_anzahl.png", dpi = 300, width = 9)
+
 LV_n <- LV_n |>
     filter(inhalt_gr != "")
 
@@ -739,9 +794,9 @@ ggsave("./figures/Inhalt_Stadt.png", dpi = 300)
 
 zahl <- nrow(LV |> filter(!is.na(Inhalte)))
 
-pal <- colorRampPalette(brewer.pal(12, "Set3"))
-
 library(RColorBrewer)
+
+pal <- colorRampPalette(brewer.pal(12, "Set3"))
 
 LV_n |>
   ggplot()+
