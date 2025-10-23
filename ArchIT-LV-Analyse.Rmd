@@ -625,14 +625,14 @@ LV_inh_st |>
 LV_inh_st |>
   ggplot(aes(x = reorder(Inhalt, -sum_inhalt) ,
              y =  reorder(Stadt, sum) ) ) +
-  geom_tile(aes(fill =  round((n/sum)*100, 1 ) ))+
+  geom_tile(aes(fill =  round((n/sum_inhalt)*100, 1 ) ))+
    geom_text(aes(label = n),  size = 2.5, col = "white" ) + 
   scale_fill_gradientn(colours = cols,   
                     values = rescale(c(0,1,2,3,4,5,10,15,20,25,50,75,100) ),
                     guide = "colorbar", limits = c(0,100) ) +
     labs(x = "",
        y = "",
-       fill = "% d. Schlagworts\n in der Stadt",
+       fill = "% Gesamt- \nanzahl d. Schlagworts",
        caption = "label = n d. Schlagwortes in der Stadt")+ 
   theme_bw()+
   theme(axis.text.x = element_text(angle=60,hjust=1))
