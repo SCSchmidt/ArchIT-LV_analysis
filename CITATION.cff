@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this compendium, please cite it as below."
+authors:
+- family-names: "Schmidt"
+  given-names: "Sophie C."
+  orcid: "https://orcid.org/0000-0003-4696-2101"
+title: "ArchIT-LV_analysis"
+version: 1.0.0
+doi: 10.5281/zenodo.10498364
+date-released: 2026-01-13
+url: "https://github.com/SCSchmidt/ArchIT-LV_analysis"
