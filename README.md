@@ -12,3 +12,6 @@ Archäoinformatik als Teil eines zukunftsfähigen Lehrplans der Archäologie, Ar
 # Analysis of DCA courses collected by IANUS
 The ArchIT-course-Analysis_eng.Rmd document offers code to create English graphs analysing the IANUS collection of German speaking courses in Digital and Computational Archaeology.
 Published in English by S.Schmidt/S. Hageneuer, Digital and computational archaeology in Germany, it - Information Technology, 66(6), 2025, 269–277, [DOI 10.1515/itit-2024-0091](https://doi.org/10.1515/itit-2024-0091) .
+
+# last update
+Updated to include further semesters until end of collection 2024, these are incorporated into the talk, given 30th Oct 2025, see [DOI 10.5281/zenodo.18233690](https://doi.org/10.5281/zenodo.18233690).
